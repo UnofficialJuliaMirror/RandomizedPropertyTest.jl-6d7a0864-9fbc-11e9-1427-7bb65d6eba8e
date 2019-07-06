@@ -1,0 +1,4 @@
+name = "RandomizedPropertyTest"
+uuid = "6d7a0864-9fbc-11e9-1427-7bb65d6eba8e"
+authors = ["Lukas Himbert <lukas_himbert@posteo.de>"]
+version = "0.1.0"
