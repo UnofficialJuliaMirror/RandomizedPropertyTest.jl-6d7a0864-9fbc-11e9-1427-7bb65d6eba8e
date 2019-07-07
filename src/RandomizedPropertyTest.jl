@@ -74,7 +74,7 @@ end
 
 
 macro quickcheck(expr :: Expr, args :: Vararg{Expr,N} where {N})
-  esc(:(@quickcheck(1000, $expr, $(args...)))) # TODO maybe change to a different value?
+  esc(:(@quickcheck($(10^5), $expr, $(args...))))
 end
 
 
