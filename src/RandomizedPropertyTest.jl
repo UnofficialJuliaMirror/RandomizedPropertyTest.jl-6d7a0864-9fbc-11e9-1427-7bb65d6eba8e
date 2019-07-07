@@ -85,22 +85,22 @@ function generate(types :: NTuple{N, DataType}) where {N}
 end
 
 
-function generate(T :: DataType)
+function generate(T :: DataType) :: T
   rand(T) # TODO: choose a different distribution?
 end
 
 
-function generate(_ :: Type{Range{T,a,b}}) where {T<:AbstractFloat,a,b}
+function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
   a + rand(T) * (b - a)
 end
 
 
-function generate(_ :: Type{Range{T,a,b}}) where {T<:Integer,a,b}
+function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
   rand(a:b)
 end
 
 
-function generate(_ :: Type{Disk{Complex{T},z0,r}}) where {T<:AbstractFloat,z0,r}
+function generate(_ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
   # generate point in unit disk
   z = Complex{T}(Inf, Inf)
   while !(abs(z) < 1)
@@ -118,7 +118,7 @@ function specialcases()
 end
 
 
-function specialcases(_ :: DataType)
+function specialcases(T :: DataType) :: Array{T,1}
   return []
 end
 
@@ -129,7 +129,7 @@ function specialcases(types :: NTuple{N,DataType}) where {N}
 end
 
 
-function specialcases(_ :: Type{T}) where {T<:AbstractFloat}
+function specialcases(_ :: Type{T}) :: Array{T,1} where {T<:AbstractFloat}
   return [
     T(0.0),
     T(-0.0),
@@ -150,7 +150,7 @@ function specialcases(_ :: Type{T}) where {T<:AbstractFloat}
 end
 
 
-function specialcases(_ :: Type{T}) where {T <: Signed}
+function specialcases(_ :: Type{T}) :: Array{T,1} where {T <: Signed}
   smin = one(T) << (8 * sizeof(T) - 1)
   smax = smin - 1
   return [
@@ -165,7 +165,7 @@ function specialcases(_ :: Type{T}) where {T <: Signed}
 end
 
 
-function specialcases(_ :: Type{T}) where {T <: Integer}
+function specialcases(_ :: Type{T}) :: Array{T} where {T <: Integer}
   return [
     T(0),
     T(1),
@@ -175,7 +175,7 @@ function specialcases(_ :: Type{T}) where {T <: Integer}
 end
 
 
-function specialcases(_ :: Type{Bool})
+function specialcases(_ :: Type{Bool}) :: Array{Bool,1}
   return [
     true,
     false,
@@ -183,7 +183,7 @@ function specialcases(_ :: Type{Bool})
 end
 
 
-function specialcases(_ :: Type{Range{T,a,b}}) where {T,a,b}
+function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T,a,b}
   return [
     T(a),
     T(b),
@@ -191,7 +191,7 @@ function specialcases(_ :: Type{Range{T,a,b}}) where {T,a,b}
 end
 
 
-function specialcases(_ :: Type{Disk{Complex{T},z0,r}}) where {T<:AbstractFloat,z0,r}
+function specialcases(_ :: Type{Disk{Complex{T},z0,r}}) :: Array{Complex{T},1} where {T<:AbstractFloat,z0,r}
   return [
     Complex{T}(z0)
   ]
