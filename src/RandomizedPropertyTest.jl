@@ -2,62 +2,79 @@ module RandomizedPropertyTest
 
 import Base.product
 import Base.Iterators.flatten
+using Logging: @logmsg, Error
 
-export @quickcheck
+export @quickcheck, Range, Disk
 
 
 """TODO: doc
 """
-macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where {N})
+struct Range{T,a,b} end
+
+struct Disk{T,z,r} end
+
+
+"""TODO: doc
+"""
+macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where N)
   names = Symbol[]
-  types = Symbol[]
+  types = []
+
+  length(vartypes) > 0 || error("No variable declared. Please use @test to test properties with no free variables.")
 
   for e in vartypes
-    e isa Expr && e.head == :(::) || error("TODO")
-    e.args[1] isa Symbol && e.args[2] isa Symbol || error("TODO")
-    !(e.args[1] in names) || error("Duplicate variable $(e.args[1]).")
-    push!(names, e.args[1])
-    push!(types, e.args[2])
+    e isa Expr && e.head == :(::) || error("Invalid variable declaration `$e`.")
+    if e.args[1] isa Symbol
+      newsymbols = Symbol[e.args[1]]
+    elseif e.args[1].head == :tuple && all(x->x isa Symbol, e.args[1].args)
+      newsymbols = e.args[1].args
+    else
+      error("Invalid variable declaration `$e`.") # TODO: allow tuples of symbols
+    end
+    all(x -> !(x in names), newsymbols) || error("Duplicate declaration of $(e.args[1]).")
+    for symb in newsymbols
+      push!(names, symb)
+      push!(types, e.args[2])
+    end
   end
 
   nametuple = Expr(:tuple, names...)
   typetuple = Expr(:tuple, types...)
-
   exprstr = let io = IOBuffer(); print(io, expr); seek(io, 0); read(io, String); end
+  namestrs = [String(n) for n in names]
+  fexpr = esc(Expr(:(->), nametuple, expr))
 
-#  println(typeof(expr), ", ", expr)
-#  Expr(:call,
-#    :quickcheck,
-#    :($nametuple -> ($expr)),
-#    Expr(:quote, expr),
-#    :(tuple(names...)),
-#    typetuple,
-#    n)
-  :(quickcheck($nametuple -> ($expr), $exprstr, $(tuple(names...)), $typetuple, $n))
-end
-
-macro quickcheck(expr :: Expr, args :: Vararg{Expr,N} where {N})
-  :(@quickcheck(100, $expr, $(args...))) # TODO maybe change to a different value?
-end
-
-#function quickcheck(f :: Function, expr ::Expr, varnames :: NTuple{N,Symbol}, types :: NTuple{N,DataType}, n) where {N}
-function quickcheck(f :: Function, expr ::String, varnames :: NTuple{N,Symbol}, types :: NTuple{N,DataType}, n) where {N}
-  #expr = expr.args[1] # undo quote
-  for vars in cat(specialcases(types), [generate(types) for _ in 1:n], dims=1)
-    if !f(vars...) # TODO: catch errors (exceptions / f(vars...) is not a bool
-      if length(varnames) == 0
-        @error "Property `$expr` does not hold."
-      elseif length(varnames) == 1
-        @error "Property `$expr` does not hold for $(Expr(:(=), varnames[1], vars))."
-      else
-        x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
-        @error "Property `$expr` does not hold for $x."
-        # TODO: error macro give wrong line number.
-        # -> remove this function, put it inside the macro (generate the code)
+  return quote
+    f = $fexpr
+    for $nametuple in cat(specialcases($typetuple), [generate($typetuple) for _ in 1:$n], dims=1)
+      try
+        if !(f($nametuple...))
+          exprstr = $exprstr
+          if length($nametuple) == 1
+            x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
+          else
+            x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
+          end
+          @error "Property `$exprstr` does not hold for $x."
+          break
+        end
+      catch exception
+        exprstr = $exprstr
+        if length($nametuple) == 1
+          x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
+        else
+          x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
+        end
+        #@logmsg Error "Error during @quickcheck of property `$exprstr` for $x."
+        rethrow(exception)
       end
-      return
     end
   end
+end
+
+
+macro quickcheck(expr :: Expr, args :: Vararg{Expr,N} where {N})
+  esc(:(@quickcheck(1000, $expr, $(args...)))) # TODO maybe change to a different value?
 end
 
 
@@ -68,8 +85,29 @@ function generate(types :: NTuple{N, DataType}) where {N}
 end
 
 
-function generate(T)
+function generate(T :: DataType)
   rand(T) # TODO: choose a different distribution?
+end
+
+
+function generate(_ :: Type{Range{T,a,b}}) where {T<:AbstractFloat,a,b}
+  a + rand(T) * (b - a)
+end
+
+
+function generate(_ :: Type{Range{T,a,b}}) where {T<:Integer,a,b}
+  rand(a:b)
+end
+
+
+function generate(_ :: Type{Disk{Complex{T},z0,r}}) where {T<:AbstractFloat,z0,r}
+  # generate point in unit disk
+  z = Complex{T}(Inf, Inf)
+  while !(abs(z) < 1)
+    z = complex(2rand(T)-1, 2rand(T)-1)
+  end
+  # scale
+  return r*z+z0
 end
 
 
@@ -80,7 +118,7 @@ function specialcases()
 end
 
 
-function specialcases(_)
+function specialcases(_ :: DataType)
   return []
 end
 
@@ -106,13 +144,15 @@ function specialcases(_ :: Type{T}) where {T<:AbstractFloat}
     maxintfloat(T),
     one(T) / maxintfloat(T),
     -one(T) / maxintfloat(T),
+    T(Inf),
+    T(-Inf),
   ]
 end
 
 
 function specialcases(_ :: Type{T}) where {T <: Signed}
   smin = one(T) << (8 * sizeof(T) - 1)
-  smax = min - 1
+  smax = smin - 1
   return [
     T(0),
     T(1),
@@ -131,6 +171,29 @@ function specialcases(_ :: Type{T}) where {T <: Integer}
     T(1),
     T(2),
     ~T(0),
+  ]
+end
+
+
+function specialcases(_ :: Type{Bool})
+  return [
+    true,
+    false,
+  ]
+end
+
+
+function specialcases(_ :: Type{Range{T,a,b}}) where {T,a,b}
+  return [
+    T(a),
+    T(b),
+  ]
+end
+
+
+function specialcases(_ :: Type{Disk{Complex{T},z0,r}}) where {T<:AbstractFloat,z0,r}
+  return [
+    Complex{T}(z0)
   ]
 end
 
