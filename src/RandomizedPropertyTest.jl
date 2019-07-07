@@ -86,12 +86,18 @@ end
 
 
 function generate(T :: DataType) :: T
-  rand(T) # TODO: choose a different distribution?
+  rand(T)
+end
+
+
+function generate(_ :: Type{T}) where {T<:AbstractFloat}
+  return 100*tan(π*(rand()-1)) # Cauchy distribution
+  # TODO: maybe choose mantissa and exponent seperately, then combine?
 end
 
 
 function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
-  a + rand(T) * (b - a)
+  a + rand(T) * (b - a) # The endpoints are included via specialcases()
 end
 
 
