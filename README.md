@@ -75,10 +75,10 @@ The function `generate` should return a single random specimen of the datatype.
 TODO
 ----
 
+- Improve generation: Don't generate all random tests upfront
 - Use a PRNG for generation (by default), for reproducibility
 - Write generators and special cases for all the things. (see how QuickCheck does it?)
 - Revisit generator for floats (how does quickcheck do it?)
-- Custom specific generators for types for which a generic generator already exists (e. g. for ranges / prob. distributions for floats) (how does QuickCheck solve this?)
 - Change Range{T,a,b} to Range{T} with members a, b (to prevent recompilation of generate(...) for the same type, but different endpoints)
 - parallel checking?
 - special cases for certain properties (like equality).
