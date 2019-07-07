@@ -21,12 +21,13 @@ There is no output (and no error), which means the property holds for all inputs
 
 Next, we will test Julia's builtin sine function, with large number of tests:
 ```jldoctest
-julia> @quickcheck 10^6 (isnan(x) || sin(x+π) ≈ sin(x)) (x :: Float64)
+julia> @quickcheck 10^6 (isnan(x) || sin(x+2π) ≈ sin(x)) (x :: Float64)
 ```
+# TODO: This fails now.
 
 It is also possible to test only variables inside of certain ranges:
 ```jldoctest
-julia> @quickcheck (0 ≤ real(exp(2π * im * x) ≤ 1)) (x :: Range{Float64, 0, π})
+julia> @quickcheck (-1 ≤ real(exp(2π * im * x)) ≤ 1) (x :: Range{Float64, 0, π})
 ```
 
 Next, let's test the geometric sum of the complex numbers inside the unit disk (the border is excluded).
@@ -57,12 +58,11 @@ julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.genera
 
 julia> struct NormalFloat{T}; end # define a new type; required for correct dispatch
 
-julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}} where {T<:AbstractFloat}) = RandomizedPropertyTest.specialcases(T) # inherit special cases
+julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = RandomizedPropertyTest.specialcases(T) # inherit special cases
 
-julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}} where {T<:AbstractFloat}) = randn(T)
+julia> RandomizedPropertyTest.generate(_ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = randn(T)
 
-# XXX TODO FIXME: this currently errors!
-julia> @quickcheck (typeof(x) == Float64) (x :: NormalFloat{T})
+julia> @quickcheck (typeof(x) == Float32) (x :: NormalFloat{Float32})
 ```
 
 Note that `specialcases` returns a list of special cases which are always checked.
