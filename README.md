@@ -45,6 +45,33 @@ julia> @quickcheck (norm([x,y,z]) ≥ 0 || any(isnan, [x,y,z])) ((x, y, z) :: Fl
 ```
 
 
+Custom Distributions or Datatypes
+---------------------------------
+
+
+To use `@quickcheck` with a custom datatype, or to generate random samples from a specific distribution, import and specialize the functions `RandomizedPropertyTest.generate` and `RandomizedPropertyTest.specialize`.
+
+In this example, we generate floats from the normal distribution.
+```
+julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.generate
+
+julia> struct NormalFloat{T}; end # define a new type; required for correct dispatch
+
+julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}} where {T<:AbstractFloat}) = RandomizedPropertyTest.specialcases(T) # inherit special cases
+
+julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}} where {T<:AbstractFloat}) = randn(T)
+
+# XXX TODO FIXME: this currently errors!
+julia> @quickcheck (typeof(x) == Float64) (x :: NormalFloat{T})
+```
+
+Note that `specialcases` returns a list of special cases which are always checked.
+For multiple variables, every combination of special cases is tested.
+Make sure to limit the number of special cases to avoid problems due to combinatorial explosion.
+
+The function `generate` should return a single random specimen of the datatype.
+
+
 TODO
 ----
 
