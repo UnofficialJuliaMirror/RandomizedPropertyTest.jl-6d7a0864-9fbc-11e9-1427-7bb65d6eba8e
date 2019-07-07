@@ -39,10 +39,10 @@ macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where N)
   end
 
   nametuple = Expr(:tuple, names...)
-  typetuple = Expr(:tuple, types...)
+  typetuple = esc(Expr(:tuple, types...)) # escaping is required for user-provided types
   exprstr = let io = IOBuffer(); print(io, expr); seek(io, 0); read(io, String); end
   namestrs = [String(n) for n in names]
-  fexpr = esc(Expr(:(->), nametuple, expr))
+  fexpr = esc(Expr(:(->), nametuple, expr)) # escaping is required for global (and other) variables in the calling scope
 
   return quote
     f = $fexpr
