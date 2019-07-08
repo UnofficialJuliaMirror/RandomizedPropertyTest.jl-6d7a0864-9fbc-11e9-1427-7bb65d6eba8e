@@ -96,6 +96,11 @@ function generate(_ :: Type{T}) where {T<:AbstractFloat}
 end
 
 
+function generate(_ :: Type{Complex{T}}) where {T<:AbstractFloat}
+  return complex(generate(T), generate(T))
+end
+
+
 function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
   a + rand(T) * (b - a) # The endpoints are included via specialcases()
 end
@@ -153,6 +158,11 @@ function specialcases(_ :: Type{T}) :: Array{T,1} where {T<:AbstractFloat}
     T(Inf),
     T(-Inf),
   ]
+end
+
+
+function specialcases(_ :: Type{Complex{T}}) :: Array{Complex{T},1} where {T <: AbstractFloat}
+  return [complex(r, i) for r in specialcases(T) for i in specialcases(T)]
 end
 
 
