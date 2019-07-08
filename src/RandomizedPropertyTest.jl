@@ -177,7 +177,7 @@ end
 
 function specialcases(_ :: Type{T}) :: Array{T,1} where {T <: Signed}
   smin = one(T) << (8 * sizeof(T) - 1)
-  smax = smin - 1
+  smax = smin - one(T)
   return [
     T(0),
     T(1),
