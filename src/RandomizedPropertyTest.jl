@@ -6,8 +6,6 @@ using Logging: @logmsg, Error
 
 export @quickcheck, Range, Disk
 
-using Test: @test, @testset, Pass
-
 
 """TODO: doc
 """
@@ -63,15 +61,31 @@ macro quickcheck(args...)
   typetuple = esc(Expr(:tuple, types...)) # escaping is required for user-provided types
   exprstr = let io = IOBuffer(); print(io, expr); seek(io, 0); read(io, String); end
   namestrs = [String(n) for n in names]
-
-  fexpr = esc(Expr(:(->), nametuple, :(@test $expr))) # escaping is required for global (and other) variables in the calling scope; unfortunately this means the caller needs to have @test in their scope
+  fexpr = esc(Expr(:(->), nametuple, expr)) # escaping is required for global (and other) variables in the calling scope
 
   return quote
-    exprstr = $exprstr
     f = $fexpr
-    @testset "@quickcheck `$exprstr` for TODO." begin
-      for vars in Base.Iterators.flatten((specialcases($typetuple), (generate($typetuple) for _ in 1:$n)))
-        typeof(f(vars...)) == Pass || break
+    for $nametuple in Base.Iterators.flatten((specialcases($typetuple), (generate($typetuple) for _ in 1:$n)))
+      try
+        if !(f($nametuple...))
+          exprstr = $exprstr
+          if length($nametuple) == 1
+            x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
+          else
+            x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
+          end
+          @error "Property `$exprstr` does not hold for $x."
+          break
+        end
+      catch exception
+        exprstr = $exprstr
+        if length($nametuple) == 1
+          x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
+        else
+          x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
+        end
+        #@logmsg Error "Error during @quickcheck of property `$exprstr` for $x."
+        rethrow(exception)
       end
     end
   end
