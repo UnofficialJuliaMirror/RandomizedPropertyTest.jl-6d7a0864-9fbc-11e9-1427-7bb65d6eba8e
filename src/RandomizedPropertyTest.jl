@@ -18,9 +18,24 @@ struct Disk{T,z,r} end
 
 """TODO: doc
 """
-macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where N)
+macro quickcheck(args...)
   names = Symbol[]
   types = []
+
+  length(args) >= 2 || error("Use as @quickcheck [n] expr type [...]")
+
+  if args[1] isa Number
+    n = args[1]
+    args = args[2:end]
+  elseif args[1] isa Expr && args[1].head == :call && args[1].args[1] == :^ && all(x->x isa Number, args[1].args[2])
+    n = ^(args[1].args[2:end]...)
+    args = args[2:length(args)]
+  else
+    n = 10^4
+  end
+
+  expr = args[1]
+  vartypes = args[2:length(args)]
 
   length(vartypes) > 0 || error("No variable declared. Please use @test to test properties with no free variables.")
 
@@ -56,11 +71,6 @@ macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where N)
       end
     end
   end
-end
-
-
-macro quickcheck(expr :: Expr, args :: Vararg{Expr,N} where {N})
-  esc(:(@quickcheck($(10^5), $expr, $(args...))))
 end
 
 
