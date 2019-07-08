@@ -104,12 +104,12 @@ function generate(T :: DataType) :: T
 end
 
 
-for (TF, TI) in Dict(Int16 => Float16, Int32 => Float32, Int64 => Float64)
-  @eval quote
-    function generate(_ :: Type{TF})
-      x = T(NaN)
+for (TI, TF) in Dict(Int16 => Float16, Int32 => Float32, Int64 => Float64)
+  @eval begin
+    function generate(_ :: Type{$TF})
+      x = $TF(NaN)
       while isnan(x) || isinf(x)
-        x = reinterpret(TF, rand(TI)) # generate a random int and pretend it is a float.
+        x = reinterpret($TF, rand($TI)) # generate a random int and pretend it is a float.
         # This gives an extremely broad distribution of floats.
         # Around 1% of the floats will have an absolute value between 1e-3 and 1e3.
       end
