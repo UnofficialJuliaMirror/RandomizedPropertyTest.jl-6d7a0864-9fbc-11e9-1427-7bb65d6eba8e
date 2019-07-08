@@ -88,3 +88,23 @@ TODO
       Property a + (b + c) == (a + b) + c does not hold for a = 1.0, b = 1.11e-16, c = 1.11e-16:
       1 + (1.11e-16 + 1.11e-16) == (1 + 1.11e-16) + 1.11e-16 evaluates to 1.000...02 == 1.0, which is false.
   (and similarly for >, <, etc.)
+
+
+How does it work?
+-----------------
+
+Here is a simplified version (mostly for the benefit of the author):
+
+```jldoctest
+julia> macro evaluate(expr, argname, arg)
+           fexpr = esc(Expr(:(->), argname, expr)) # define a closure in the calling scope
+           Expr(:call, fexpr, arg) # call it
+       end
+@evaluate (macro with 1 method)
+
+julia> y = 2
+2
+
+julia> @evaluate (4*x+y) x 10
+42
+```
