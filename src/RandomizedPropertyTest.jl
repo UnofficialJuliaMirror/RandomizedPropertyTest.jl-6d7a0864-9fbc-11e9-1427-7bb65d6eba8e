@@ -1,5 +1,6 @@
 module RandomizedPropertyTest
 
+using Random: MersenneTwister, AbstractRNG
 import Base.product
 import Base.Iterators.flatten
 using Logging: @logmsg, Error
@@ -64,8 +65,9 @@ macro quickcheck(args...)
   fexpr = esc(Expr(:(->), nametuple, expr)) # escaping is required for global (and other) variables in the calling scope
 
   return quote
+    rng = $(MersenneTwister(0))
     f = $fexpr
-    for $nametuple in Base.Iterators.flatten((specialcases($typetuple), (generate($typetuple) for _ in 1:$n)))
+    for $nametuple in Base.Iterators.flatten((specialcases($typetuple), (generate(rng, $typetuple) for _ in 1:$n)))
       try
         if !(f($nametuple...))
           exprstr = $exprstr
@@ -94,22 +96,22 @@ end
 
 """TODO: doc
 """
-function generate(types :: NTuple{N, DataType}) where {N}
-  return tuple((generate(T) for T in types)...)
+function generate(rng :: AbstractRNG, types :: NTuple{N, DataType}) where {N}
+  return tuple((generate(rng, T) for T in types)...)
 end
 
 
-function generate(T :: DataType) :: T
-  rand(T)
+function generate(rng :: AbstractRNG, T :: DataType) :: T
+  rand(rng, T)
 end
 
 
 for (TI, TF) in Dict(Int16 => Float16, Int32 => Float32, Int64 => Float64)
   @eval begin
-    function generate(_ :: Type{$TF})
+    function generate(rng :: AbstractRNG, _ :: Type{$TF})
       x = $TF(NaN)
       while isnan(x) || isinf(x)
-        x = reinterpret($TF, rand($TI)) # generate a random int and pretend it is a float.
+        x = reinterpret($TF, rand(rng, $TI)) # generate a random int and pretend it is a float.
         # This gives an extremely broad distribution of floats.
         # Around 1% of the floats will have an absolute value between 1e-3 and 1e3.
       end
@@ -119,26 +121,26 @@ for (TI, TF) in Dict(Int16 => Float16, Int32 => Float32, Int64 => Float64)
 end
 
 
-function generate(_ :: Type{Complex{T}}) where {T<:AbstractFloat}
-  return complex(generate(T), generate(T))
+function generate(rng :: AbstractRNG, _ :: Type{Complex{T}}) where {T<:AbstractFloat}
+  return complex(generate(rng, T), generate(rng, T))
 end
 
 
-function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
-  a + rand(T) * (b - a) # The endpoints are included via specialcases()
+function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
+  a + rand(rng, T) * (b - a) # The endpoints are included via specialcases()
 end
 
 
-function generate(_ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
-  rand(a:b)
+function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
+  rand(rng, a:b)
 end
 
 
-function generate(_ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
+function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
   # generate point in unit disk
   z = Complex{T}(Inf, Inf)
   while !(abs(z) < 1)
-    z = complex(2rand(T)-1, 2rand(T)-1)
+    z = complex(2rand(rng, T)-1, 2rand(rng, T)-1)
   end
   # scale
   return r*z+z0

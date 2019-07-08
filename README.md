@@ -54,13 +54,13 @@ To use `@quickcheck` with a custom datatype, or to generate random samples from 
 
 In this example, we generate floats from the normal distribution.
 ```
-julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.generate
+julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.generate, Random.AbstractRNG
 
 julia> struct NormalFloat{T}; end # define a new type; required for correct dispatch
 
 julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = RandomizedPropertyTest.specialcases(T) # inherit special cases
 
-julia> RandomizedPropertyTest.generate(_ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = randn(T)
+julia> RandomizedPropertyTest.generate(rng :: Random.AbstractRNG, _ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = randn(rng, T)
 
 julia> @quickcheck (typeof(x) == Float32) (x :: NormalFloat{Float32})
 ```
@@ -70,13 +70,14 @@ For multiple variables, every combination of special cases is tested.
 Make sure to limit the number of special cases to avoid problems due to combinatorial explosion.
 
 The function `generate` should return a single random specimen of the datatype.
+Note that it takes a `AbstractRNG` argument.
+You do not technically have to use it, but using it to generate random numbers means that tests (and test failures) are reproducible.
 
 
 TODO
 ----
 
 - Figure out how to insert RandomizedPropertyTest.@test into esc(Expr(... @test expr ...)).
-- Use a PRNG for generation (by default), for reproducibility
 - Write generators and special cases for all the things. (see how QuickCheck does it?)
 - parallel checking?
 
