@@ -46,7 +46,7 @@ macro quickcheck(n :: Integer, expr :: Expr, vartypes :: Vararg{Expr,N} where N)
 
   return quote
     f = $fexpr
-    for $nametuple in cat(specialcases($typetuple), [generate($typetuple) for _ in 1:$n], dims=1)
+    for $nametuple in Base.Iterators.flatten((specialcases($typetuple), (generate($typetuple) for _ in 1:$n)))
       try
         if !(f($nametuple...))
           exprstr = $exprstr
