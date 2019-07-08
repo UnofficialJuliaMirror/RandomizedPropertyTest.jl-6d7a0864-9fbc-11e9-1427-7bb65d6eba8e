@@ -75,19 +75,11 @@ The function `generate` should return a single random specimen of the datatype.
 TODO
 ----
 
-- Improve generation: Don't generate all random tests upfront
+- Figure out how to insert RandomizedPropertyTest.@test into esc(Expr(... @test expr ...)).
 - Use a PRNG for generation (by default), for reproducibility
 - Write generators and special cases for all the things. (see how QuickCheck does it?)
-- Revisit generator for floats (how does quickcheck do it?)
 - Change Range{T,a,b} to Range{T} with members a, b (to prevent recompilation of generate(...) for the same type, but different endpoints)
 - parallel checking?
-- special cases for certain properties (like equality).
-  Example:
-      @quickcheck let a :: Float64, b :: Float64, c :: Float64; a + (b + c) == (a + b) + c; end
-  should give something like:
-      Property a + (b + c) == (a + b) + c does not hold for a = 1.0, b = 1.11e-16, c = 1.11e-16:
-      1 + (1.11e-16 + 1.11e-16) == (1 + 1.11e-16) + 1.11e-16 evaluates to 1.000...02 == 1.0, which is false.
-  (and similarly for >, <, etc.)
 
 
 How does it work?
