@@ -11,6 +11,10 @@ using Test: @test, @testset, Pass
 
 """TODO: doc
 """
+# Note: Having a and b (the range endpoints) as type parameters is a bit unfortunate.
+# It means that for ranges with the same type T but different endpoints, all relevant functions have to be recompiled.
+# However, it is required because of generate(::NTuple{N, DataType}).
+# Anyway, it is only for tests, so it should not be too much of a problem.
 struct Range{T,a,b} end
 
 struct Disk{T,z,r} end

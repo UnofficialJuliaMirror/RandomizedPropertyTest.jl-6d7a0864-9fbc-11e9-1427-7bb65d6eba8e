@@ -78,7 +78,6 @@ TODO
 - Figure out how to insert RandomizedPropertyTest.@test into esc(Expr(... @test expr ...)).
 - Use a PRNG for generation (by default), for reproducibility
 - Write generators and special cases for all the things. (see how QuickCheck does it?)
-- Change Range{T,a,b} to Range{T} with members a, b (to prevent recompilation of generate(...) for the same type, but different endpoints)
 - parallel checking?
 
 
