@@ -146,13 +146,11 @@ end
 
 
 function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
-  # generate point in unit disk
   z = Complex{T}(Inf, Inf)
-  while !(abs(z) < 1)
-    z = complex(2rand(rng, T)-1, 2rand(rng, T)-1)
+  while !(abs(z - z0) < r)
+    z = r * complex(2rand(rng, T)-1, 2rand(rng, T)-1) + z0
   end
-  # scale
-  return r*z+z0
+  return z
 end
 
 
