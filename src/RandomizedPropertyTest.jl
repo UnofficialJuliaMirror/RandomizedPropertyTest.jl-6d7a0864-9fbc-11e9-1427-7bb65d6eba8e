@@ -172,11 +172,15 @@ end
 
 
 function specialcases(_ :: Type{Array{T,N}}) :: Array{Array{T,N},1} where {T,N}
-  # TODO: For N ≥ 3, this uses huge amounts of memory!
   d0 = [Array{T,N}(undef, repeat([0], N)...)]
   d1 = [reshape([x], repeat([1], N)...) for x in specialcases(T)]
-  d2_ = collect(Base.Iterators.product(repeat([specialcases(T)], 2^N)...))
-  d2 = [Array{T,N}(reshape([d2_[i]...], repeat([2], N)...)) for i in 1:length(d2_)]
+  if N ≥ 3
+    # For N ≥ 3, this uses huge amounts of memory, so we don't do it.
+    d2_ = collect(Base.Iterators.product(repeat([specialcases(T)], 2^N)...))
+    d2 = [Array{T,N}(reshape([d2_[i]...], repeat([2], N)...)) for i in 1:length(d2_)]
+  else
+    d2 = Array{Array{T,N},1}(undef, 0)
+  end
   return cat(d0, d1, d2, dims=1)
 end
 
