@@ -184,18 +184,15 @@ end
 function specialcases(_ :: Type{T}) :: Array{T,1} where {T<:AbstractFloat}
   return [
     T(0.0),
-    T(-0.0),
-    T(-1.0),
     T(1.0),
-    T(0.5),
+    T(-1.0),
     T(-0.5),
     T(1)/T(3),
     floatmax(T),
     floatmin(T),
-    T(NaN),
     maxintfloat(T),
-    one(T) / maxintfloat(T),
     -one(T) / maxintfloat(T),
+    T(NaN),
     T(Inf),
     T(-Inf),
   ]
