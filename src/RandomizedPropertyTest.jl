@@ -65,33 +65,35 @@ macro quickcheck(args...)
   fexpr = esc(Expr(:(->), nametuple, expr)) # escaping is required for global (and other) variables in the calling scope
 
   return quote
-    rng = $(MersenneTwister(0))
-    f = $fexpr
-    for $nametuple in Base.Iterators.flatten((specialcases($typetuple), (generate(rng, $typetuple) for _ in 1:$n)))
-      try
-        if !(f($nametuple...))
-          exprstr = $exprstr
-          if length($nametuple) == 1
-            x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
-          else
-            x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
-          end
-          @error "Property `$exprstr` does not hold for $x."
-          return false
-        end
-      catch exception
-        exprstr = $exprstr
-        if length($nametuple) == 1
-          x = Expr(:(=), Symbol($namestrs[1]), $nametuple[1])
-        else
-          x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
-        end
-        #@logmsg Error "Error during @quickcheck of property `$exprstr` for $x."
-        rethrow(exception)
-      end
-    end
-  return true
+    do_quickcheck($fexpr, $exprstr, $namestrs, $typetuple, $n)
   end
+end
+
+
+function do_quickcheck(f :: Function, exprstr, varnames, types :: NTuple{N,DataType}, n :: Integer) where {N}
+  rng = MersenneTwister(0)
+  for vars in Base.Iterators.flatten((specialcases(types), generate(rng, types) for _ in 1:n))
+    try
+      if !f(vars...)
+        if length(varnames) == 1
+          x = Expr(:(=), Symbol(varnames[1]), vars[1])
+        else
+          x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
+        end
+        @error "Property `$exprstr` does not hold for $x."
+        return false
+      end
+    catch exception
+      if length(varnames) == 1
+        x = Expr(:(=), Symbol(varnames[1]), vars[1])
+      else
+        x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
+      end
+      @error "Property `$exprstr` does not hold for $x."
+      rethrow(exception)
+    end
+  end
+  return true
 end
 
 
