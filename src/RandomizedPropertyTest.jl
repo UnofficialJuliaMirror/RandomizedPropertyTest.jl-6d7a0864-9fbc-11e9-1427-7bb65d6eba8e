@@ -77,7 +77,7 @@ macro quickcheck(args...)
             x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip($names, $nametuple))...)
           end
           @error "Property `$exprstr` does not hold for $x."
-          break
+          return false
         end
       catch exception
         exprstr = $exprstr
@@ -90,6 +90,7 @@ macro quickcheck(args...)
         rethrow(exception)
       end
     end
+  return true
   end
 end
 
