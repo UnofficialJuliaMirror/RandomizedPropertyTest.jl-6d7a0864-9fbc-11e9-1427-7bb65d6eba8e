@@ -74,12 +74,18 @@ Note that it takes a `AbstractRNG` argument.
 You do not technically have to use it, but using it to generate random numbers means that tests (and test failures) are reproducible.
 
 
+Bugs
+----
+
+- Performance is quite low: `@quickcheck 10^6 true (x :: Int)` takes around 6 seconds on the author's laptop.
+
+
 TODO
 ----
 
 - Figure out how to insert RandomizedPropertyTest.@test into esc(Expr(... @test expr ...)).
 - Write generators and special cases for all the things. (see how QuickCheck does it?)
-- parallel checking?
+- parallel checking? (Problem: reproducibility)
 
 
 How does it work?
