@@ -1,6 +1,6 @@
 module RandomizedPropertyTest
 
-using Random: MersenneTwister, AbstractRNG
+using Random: MersenneTwister, AbstractRNG, randexp
 import Base.product
 import Base.Iterators.flatten
 using Logging: @logmsg, Error
@@ -106,6 +106,12 @@ function generate(rng :: AbstractRNG, T :: DataType) :: T
 end
 
 
+function generate(rng :: AbstractRNG, _ :: Type{Array{T,N}}) :: Array{T,N} where {T,N}
+  shape = Int.(round.(1 .+ 3 .* randexp(rng, N))) # empty array is a special case
+  return rand(rng, T, shape...)
+end
+
+
 for (TI, TF) in Dict(Int16 => Float16, Int32 => Float32, Int64 => Float64)
   @eval begin
     function generate(rng :: AbstractRNG, _ :: Type{$TF})
@@ -162,6 +168,16 @@ end
 function specialcases(types :: NTuple{N,DataType}) where {N}
   cases = [specialcases(T) for T in types]
   return reshape(collect(Base.product(cases...)), prod(length(c) for c in cases))
+end
+
+
+function specialcases(_ :: Type{Array{T,N}}) :: Array{Array{T,N},1} where {T,N}
+  # TODO: For N ≥ 3, this uses huge amounts of memory!
+  d0 = [Array{T,N}(undef, repeat([0], N)...)]
+  d1 = [reshape([x], repeat([1], N)...) for x in specialcases(T)]
+  d2_ = collect(Base.Iterators.product(repeat([specialcases(T)], 2^N)...))
+  d2 = [Array{T,N}(reshape([d2_[i]...], repeat([2], N)...)) for i in 1:length(d2_)]
+  return cat(d0, d1, d2, dims=1)
 end
 
 
