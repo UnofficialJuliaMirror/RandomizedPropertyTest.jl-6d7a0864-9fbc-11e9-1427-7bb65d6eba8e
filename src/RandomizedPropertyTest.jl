@@ -264,11 +264,13 @@ export Range
 
 
 function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
+  a ≤ b && isfinite(a) && isfinite(b) || error("a needs to be ≤ b and both need to be finite")
   a + rand(rng, T) * (b - a) # The endpoints are included via specialcases()
 end
 
 
 function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
+  a ≤ b || error("a needs to be ≤ b")
   rand(rng, a:b)
 end
 
@@ -292,9 +294,9 @@ end
 
 
 """
-    Disk{T,z,r}
+    Disk{T,z₀,r}
 
-Represents a Disk of radius `r and center `z` in the set `T` (boundary excluded).
+Represents a Disk of radius `r and center `z₀` in the set `T` (boundary excluded).
 `r` should be nonnegative.
 Both `z` and `r` should be finite and non-NaN.
 
@@ -304,23 +306,25 @@ julia> @quickcheck (typeof(x) == ComplexF16 && abs(x-2im) < 3) (x :: Disk{Comple
 true
 ```
 """
-struct Disk{T,z,r} end
+struct Disk{T,z₀,r} end
 
 export Disk
 
 
-function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
+function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z₀,r}}) :: Complex{T} where {T<:AbstractFloat,z₀,r}
+  r ≥ 0 || error("r needs to be ≥ 0")
+  isfinite(z₀) || error("z₀ needs to be finite")
   z = Complex{T}(Inf, Inf)
-  while !(abs(z - z0) < r)
-    z = r * complex(2rand(rng, T)-1, 2rand(rng, T)-1) + z0
+  while !(abs(z - z₀) < r)
+    z = r * complex(2rand(rng, T)-1, 2rand(rng, T)-1) + z₀
   end
   return z
 end
 
 
-function specialcases(_ :: Type{Disk{Complex{T},z0,r}}) :: Array{Complex{T},1} where {T<:AbstractFloat,z0,r}
+function specialcases(_ :: Type{Disk{Complex{T},z₀,r}}) :: Array{Complex{T},1} where {T<:AbstractFloat,z₀,r}
   return [
-    Complex{T}(z0)
+    Complex{T}(z₀)
   ]
 end
 
