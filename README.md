@@ -138,7 +138,7 @@ Similar work
   Hence this project.
 - [`Quickcheck.jl`](https://github.com/pao/QuickCheck.jl) is a property testing implementation for Julia programs, also inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
   At the time of writing, it seems to be unmaintained since five years and is not compatible with Julia version 1 (though a pull request which fixes this is pending).
-  It also does not specifically test special values like NaN or empty arrays, which are often handled incorrectly, and which are not easily found through purely random testing.
+  Unlike this package, it does not specifically test special values like NaN or empty arrays.
 
 
 Version
@@ -151,7 +151,7 @@ The current version is 0.0.1.
 TODO
 ----
 
-- XXX: Add actual docstrings for `@quickcheck`, `generate`, `specialcases`, `Range`, `Disk`.
+- XXX modify `@quickcheck` to allow `n=[arbitrary expression]`.
 - Write generators and special cases for all the things (see how QuickCheck does it?):
   - square matrices
   - symmetric matrices
