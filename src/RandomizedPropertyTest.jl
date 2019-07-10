@@ -5,18 +5,7 @@ import Base.product
 import Base.Iterators.flatten
 using Logging: @warn
 
-export @quickcheck, Range, Disk
-
-
-"""TODO: doc
-"""
-# Note: Having a and b (the range endpoints) as type parameters is a bit unfortunate.
-# It means that for ranges with the same type T but different endpoints, all relevant functions have to be recompiled.
-# However, it is required because of generate(::NTuple{N, DataType}).
-# Anyway, it is only for tests, so it should not be too much of a problem.
-struct Range{T,a,b} end
-
-struct Disk{T,z,r} end
+export @quickcheck
 
 
 """TODO: doc
@@ -160,25 +149,6 @@ function generate(rng :: AbstractRNG, _ :: Type{Complex{T}}) where {T<:AbstractF
 end
 
 
-function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
-  a + rand(rng, T) * (b - a) # The endpoints are included via specialcases()
-end
-
-
-function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
-  rand(rng, a:b)
-end
-
-
-function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
-  z = Complex{T}(Inf, Inf)
-  while !(abs(z - z0) < r)
-    z = r * complex(2rand(rng, T)-1, 2rand(rng, T)-1) + z0
-  end
-  return z
-end
-
-
 """TODO: doc
 """
 function specialcases()
@@ -266,6 +236,43 @@ function specialcases(_ :: Type{Bool}) :: Array{Bool,1}
 end
 
 
+#=
+   special datatypes
+=#
+
+
+"""
+    Range{T,a,b}
+
+Represents a range of variables of type `T`, with both endpoints `a` and `b` included.
+`a` should be smaller than or eqaul to `b`.
+Both `a` and `b` should be finite and non-NaN.
+
+The type is used to generate variables of type `T` in the interval [`a`, `b`] for the `@quickcheck` macro:
+```
+julia> @quickcheck (typeof(x) == Int && 23 ≤ x ≤ 42) (x :: Range{Int, 23, 42})
+true
+```
+"""
+# Note: Having a and b (the range endpoints) as type parameters is a bit unfortunate.
+# It means that for ranges with the same type T but different endpoints, all relevant functions have to be recompiled.
+# However, it is required because of generate(::NTuple{N, DataType}).
+# Anyway, it is only for tests, so it should not be too much of a problem.
+struct Range{T,a,b} end
+
+export Range
+
+
+function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:AbstractFloat,a,b}
+  a + rand(rng, T) * (b - a) # The endpoints are included via specialcases()
+end
+
+
+function generate(rng :: AbstractRNG, _ :: Type{Range{T,a,b}}) :: T where {T<:Integer,a,b}
+  rand(rng, a:b)
+end
+
+
 function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T<:AbstractFloat,a,b}
   return [
     T(a),
@@ -281,6 +288,33 @@ function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T<:Integer,a
     div(T(a)+T(b), 2),
     T(b),
   ]
+end
+
+
+"""
+    Disk{T,z,r}
+
+Represents a Disk of radius `r and center `z` in the set `T` (boundary excluded).
+`r` should be nonnegative.
+Both `z` and `r` should be finite and non-NaN.
+
+The type is used to generate variables `x` of type `T` such that (abs(x-z) < r) for the `@quickcheck` macro:
+```
+julia> @quickcheck (typeof(x) == ComplexF16 && abs(x-2im) < 3) (x :: Disk{Complex{Float16}, 2im, 3})
+true
+```
+"""
+struct Disk{T,z,r} end
+
+export Disk
+
+
+function generate(rng :: AbstractRNG, _ :: Type{Disk{Complex{T},z0,r}}) :: Complex{T} where {T<:AbstractFloat,z0,r}
+  z = Complex{T}(Inf, Inf)
+  while !(abs(z - z0) < r)
+    z = r * complex(2rand(rng, T)-1, 2rand(rng, T)-1) + z0
+  end
+  return z
 end
 
 
