@@ -110,7 +110,7 @@ end
 """TODO: doc
 """
 function generate(rng :: AbstractRNG, types :: NTuple{N, DataType}) where {N}
-  return tuple((generate(rng, T) for T in types)...)
+  return [generate(rng, T) for T in types]
 end
 
 
