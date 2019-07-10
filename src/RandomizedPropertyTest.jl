@@ -96,7 +96,35 @@ function do_quickcheck(f :: Function, exprstr, varnames, vars)
 end
 
 
-"""TODO: doc
+"""
+    generate(rng :: Random.AbstractRNG, T :: DataType)
+
+Returns a single pseudorandomly chosen specimen corresponding to data type `T` for the `@quickcheck` macro.
+`RandomPropertyTest` defines this function for some builtin types, for example `Int` and `Float32`.
+
+To define a generator for your own custom type, `import RandomizedPropertyTest.generate` and specialize it for that type.
+
+See also `specialcases`, `@quickcheck`.
+
+Example
+-------
+
+Specialize `generate` to generate double-precision floats in the interval [0, π):
+
+```jldoctest
+julia> import Random
+
+julia> struct MyRange; end
+
+julia> RandomizedPropertyTest.generate(rng :: Random.AbstractRNG, _ :: Type{MyRange}) = rand(rng, Float64) * π;
+```
+
+This is just an example; in practice, consider using `Range{Float64, 0, π}` instead.
+
+```jldoctest
+julia> 2+2 # TODO: This is for doctest testing
+5
+```
 """
 function generate(rng :: AbstractRNG, types :: NTuple{N, DataType}) where {N}
   return (generate(rng, T) for T in types)
@@ -149,7 +177,33 @@ function generate(rng :: AbstractRNG, _ :: Type{Complex{T}}) where {T<:AbstractF
 end
 
 
-"""TODO: doc
+"""
+    specialcases(T :: DataType)
+
+Returns a one-dimensional Array of values corresponding to `T` for the `@quickcheck` macro.
+`RandomPropertyTest` overloads this function for some builtin types, for example `Int` and `Float64`.
+
+To define special cases for your own custom data type, `import RandomizedPropertyTest.specialcases` and specialize it for that type.
+
+See also `generate()`, `@quickcheck`.
+
+Examples
+--------
+
+View special cases for the builtin type `Bool`:
+```jldoctest
+julia> RandomizedPropertyTest.specialcases(Bool)
+2-element Array{Bool,1}:
+  true
+ false
+```
+
+Define special cases for a custom type:
+```
+julia> struct MyFloat; end
+
+julia> RandomizedPropertyTest.specialcases(_ :: Type{MyFloat}) = Float32[0.0, Inf, -Inf, eps(0.5), π];
+```
 """
 function specialcases()
   return []
