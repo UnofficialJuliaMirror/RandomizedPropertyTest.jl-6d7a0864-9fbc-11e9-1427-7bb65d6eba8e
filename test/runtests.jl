@@ -4,16 +4,21 @@ using RandomizedPropertyTest
 import Random
 import Logging
 
-Logging.disable_logging(Logging.Warn)
+
+@testset "All tests" begin
 
 @testset "Test failures" begin
+  Logging.disable_logging(Logging.Warn)
   @test false == @quickcheck 10 false (x :: Int)
   @test false == @quickcheck 10 (x < 0) (x :: Int)
   @test_throws ErrorException @quickcheck error() (x :: Int)
+  Logging.disable_logging(Logging.Info)
 end
 
 @testset "Test escaping" begin
+  Logging.disable_logging(Logging.Warn)
   @test_throws UndefVarError @quickcheck (y == 4) (x :: Int)
+  Logging.disable_logging(Logging.Info)
   begin
     y = 4
     @test @quickcheck (y == 4) (x :: Int)
@@ -26,11 +31,9 @@ end
   end
 end
 
-Logging.disable_logging(Logging.Info)
-
-
-makedocs(sitename="RandomizedPropertyTest.jl", strict=true)
-
+@testset "run doctests" begin
+  @test begin makedocs(sitename="RandomizedPropertyTest.jl", strict=true); true; end
+end
 
 @testset "Check type for basic datatypes" begin
   for T in (Bool, Float16, Float32, Float64, Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128, ComplexF16, ComplexF32, ComplexF64)
@@ -78,3 +81,5 @@ end
     #@test @quickcheck 10 (typeof(x) == Array{T,3}) (x :: Array{T,3})
   end
 end
+
+end # @testset "All tests"
