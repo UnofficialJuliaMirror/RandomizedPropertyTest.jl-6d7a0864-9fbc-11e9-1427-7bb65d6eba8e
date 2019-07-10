@@ -8,6 +8,7 @@ Examples
 --------
 
 The first property we test is that the square of a double-precision floating point number is nonnegative.
+
 ```julia
 julia> using RandomizedPropertyTest
 
@@ -16,27 +17,33 @@ julia> @quickcheck (x^2 ≥ 0) (x :: Float64)
 └ @ RandomizedPropertyTest [snip]/RandomizedPropertyTest.jl:83
 false
 ```
+
 The macro prints a message which gives a failing input: NaN.
 After refining the property, the test succeeds:
+
 ```jldoctest
 julia> using RandomizedPropertyTest
 
 julia> @quickcheck (isnan(x) || x^2 ≥ 0) (x :: Float64)
 true
 ```
+
 The macro returns true, which means the property holds for all inputs which were tested.
 Because the macro returns a boolean, it can be used together with the `@test` macro for automated testing.
 
 Next, we will test Julia's builtin trigonometric functions, for floats inside of a certain range:
+
 ```jldoctest
 julia> using RandomizedPropertyTest
 
 julia> @quickcheck (sin(x + π/2) ≈ cos(x)) (x :: Range{Float64, 0, 2π})
 true
 ```
+
 Note that ranges are inclusive, and both endpoints are treated as special cases which are always tested.
 
 Tests can use multiple variables.
+
 ```
 julia> using RandomizedPropertyTest
 
@@ -45,6 +52,7 @@ true
 ```
 
 There is convenient syntax for declaring multiple variables of the same type.
+
 ```jldoctest
 julia> using LinearAlgebra, RandomizedPropertyTest
 
@@ -53,16 +61,19 @@ true
 ```
 
 To increase (or reduce) the number of random tests, we can simply give the number as first argument.
+
 ```jldoctest
 julia> using RandomizedPropertyTest
 
 julia> @quickcheck 10^6 (sum(x^k/factorial(k) for k in 20:-1:0) ≈ exp(x)) (x :: Range{Float64, -2, 2})
 true
 ```
+
 At the moment, only numbers and powers of numbers are supported.
 Other expressions (including variables) are not supported at this time.
 
 Next, let's test the value of the geometric series for complex numbers inside the unit disk (the boundary is excluded).
+
 ```jldoctest
 julia> using RandomizedPropertyTest
 
@@ -73,12 +84,14 @@ true
 ```
 
 Support for Arrays is also available:
+
 ```jldoctest
 julia> using LinearAlgebra, RandomizedPropertyTest
 
 julia> @quickcheck (any(isnan, A) || any(isinf, A) || all(λ->λ≥-0.001, eigvals(Symmetric(A * transpose(A))))) (A :: Array{Float32, 2})
 true
 ```
+
 At this time, support for arrays with more than two dimensions is limited.
 
 
@@ -89,6 +102,7 @@ Custom Distributions or Datatypes
 To use `@quickcheck` with a custom datatype, or to generate random samples from a specific distribution, import and specialize the functions `RandomizedPropertyTest.generate` and `RandomizedPropertyTest.specialcases`.
 
 In this example, we generate floats from the normal distribution.
+
 ```
 julia> using RandomizedPropertyTest
 
@@ -152,6 +166,7 @@ TODO
 ----
 
 - XXX modify `@quickcheck` to allow `n=[arbitrary expression]`.
+- XXX add LICENSE.TXT, a copyright section to this readme, and a copyright header to src/*.jl
 - Write generators and special cases for all the things (see how QuickCheck does it?):
   - square matrices
   - symmetric matrices
