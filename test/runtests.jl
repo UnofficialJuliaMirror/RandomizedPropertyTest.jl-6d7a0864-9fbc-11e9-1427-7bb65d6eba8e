@@ -1,6 +1,36 @@
 using Test
 using Documenter: makedocs
 using RandomizedPropertyTest
+import Random
+import Logging
+
+Logging.disable_logging(Logging.Warn)
+
+@testset "Test failures" begin
+  @test false == @quickcheck 10 false (x :: Int)
+  @test false == @quickcheck 10 (x < 0) (x :: Int)
+  @test_throws ErrorException @quickcheck error() (x :: Int)
+end
+
+@testset "Test escaping" begin
+  @test_throws UndefVarError @quickcheck (y == 4) (x :: Int)
+  begin
+    y = 4
+    @test @quickcheck (y == 4) (x :: Int)
+  end
+  begin
+    struct SomeType end
+    RandomizedPropertyTest.specialcases(_ :: Type{SomeType}) = Int8[1]
+    RandomizedPropertyTest.generate(_ :: Random.AbstractRNG, _ :: Type{SomeType}) = Int8(1)
+    @test @quickcheck (typeof(x) == Int8 && x == 1) (x :: SomeType)
+  end
+end
+
+Logging.disable_logging(Logging.Info)
+
+
+makedocs(sitename="RandomizedPropertyTest.jl", strict=true)
+
 
 @testset "Check type for basic datatypes" begin
   for T in (Bool, Float16, Float32, Float64, Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128, ComplexF16, ComplexF32, ComplexF64)
@@ -48,8 +78,3 @@ end
     #@test @quickcheck 10 (typeof(x) == Array{T,3}) (x :: Array{T,3})
   end
 end
-
-#@testset "Check doctests" begin
-#  @test_nowarn makedocs(sitename="RandomizedPropertyTest.jl", strict=true)
-#end
-makedocs(sitename="RandomizedPropertyTest.jl", strict=true)

@@ -3,7 +3,7 @@ module RandomizedPropertyTest
 using Random: MersenneTwister, AbstractRNG, randexp
 import Base.product
 import Base.Iterators.flatten
-using Logging: @logmsg, Error
+using Logging: @warn
 
 export @quickcheck, Range, Disk
 
@@ -91,16 +91,16 @@ function do_quickcheck(f :: Function, exprstr, varnames, vars)
       else
         x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
       end
-      @error "Property `$exprstr` does not hold for $x."
+      @warn "Property `$exprstr` does not hold for $x."
       return false
     end
   catch exception
     if length(varnames) == 1
-      x = Expr(:(=), Symbol(varnames[1]), varlues[1])
+      x = Expr(:(=), Symbol(varnames[1]), vars[1])
     else
       x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
     end
-    @error "Property `$exprstr` does not hold for $x."
+    @warn "Property `$exprstr` does not hold for $x."
     rethrow(exception)
   end
   return true

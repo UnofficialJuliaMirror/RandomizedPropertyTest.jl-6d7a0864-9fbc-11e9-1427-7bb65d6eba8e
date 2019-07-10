@@ -8,12 +8,12 @@ Examples
 --------
 
 The first property we test is that the square of a double-precision floating point number is nonnegative.
-```jldoctest
+```julia
 julia> using RandomizedPropertyTest
 
 julia> @quickcheck (x^2 ≥ 0) (x :: Float64)
-┌ Error: Property `x ^ 2 ≥ 0` does not hold for x = NaN.
-└ @ RandomizedPropertyTest ~/store/zeug/RandomizedPropertyTest/src/RandomizedPropertyTest.jl:94
+┌ Warning: Property `x ^ 2 ≥ 0` does not hold for x = NaN.
+└ @ RandomizedPropertyTest [snip]/RandomizedPropertyTest.jl:83
 false
 ```
 The macro prints a message which gives a failing input: NaN.
@@ -124,6 +124,10 @@ Bugs and caveats
   If you need something like this, consider specialising `RandomizedPropertyTest.generate` for a custom generator datatype instead.
 - Testing is not exhaustive:
   You should not rely on `@quickcheck` to test every possible input value, e. g. if the only variable for which you are testing is a small integer range.
+- Error messages do not give correct source location information in case of a failure.
+  However, if `@quickcheck` used in conjunction with `@test`, a full stacktrace is given; if it is used interactively, the location should be obvious.
+  Further, in both cases the expression is printed.
+  This makes the lack of correct location only a minor issue in most cases.
 
 
 Similar work
