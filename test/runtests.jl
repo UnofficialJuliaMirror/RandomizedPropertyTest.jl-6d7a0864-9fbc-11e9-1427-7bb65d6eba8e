@@ -1,5 +1,4 @@
 using Test
-using Documenter: makedocs
 using RandomizedPropertyTest
 import Random
 import Logging
@@ -29,10 +28,6 @@ end
     RandomizedPropertyTest.generate(_ :: Random.AbstractRNG, _ :: Type{SomeType}) = Int8(1)
     @test @quickcheck (typeof(x) == Int8 && x == 1) (x :: SomeType)
   end
-end
-
-@testset "run doctests" begin
-  @test begin makedocs(sitename="RandomizedPropertyTest.jl", strict=true); true; end
 end
 
 @testset "Check type for basic datatypes" begin
