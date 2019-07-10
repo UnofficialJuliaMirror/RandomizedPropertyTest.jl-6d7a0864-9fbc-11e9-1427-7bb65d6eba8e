@@ -3,6 +3,7 @@
 
 `RandomizedPropertyTest.jl` is a test framework for testing program properties with random (as well as special pre-defined) inputs.
 
+Test status: [![builds.sr.ht status](https://builds.sr.ht/~quf/RandomizedPropertyTest.jl.svg)](https://builds.sr.ht/~quf/RandomizedPropertyTest.jl?)
 
 Examples
 --------
