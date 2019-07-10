@@ -1,4 +1,5 @@
 using Test
+using Documenter: makedocs
 using RandomizedPropertyTest
 
 @testset "Check type for basic datatypes" begin
@@ -47,3 +48,8 @@ end
     #@test @quickcheck 10 (typeof(x) == Array{T,3}) (x :: Array{T,3})
   end
 end
+
+#@testset "Check doctests" begin
+#  @test_nowarn makedocs(sitename="RandomizedPropertyTest.jl", strict=true)
+#end
+makedocs(sitename="RandomizedPropertyTest.jl", strict=true)
