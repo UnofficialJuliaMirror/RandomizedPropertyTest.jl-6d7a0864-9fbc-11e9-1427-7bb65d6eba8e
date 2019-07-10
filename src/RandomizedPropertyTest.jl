@@ -266,9 +266,19 @@ function specialcases(_ :: Type{Bool}) :: Array{Bool,1}
 end
 
 
-function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T,a,b}
+function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T<:AbstractFloat,a,b}
   return [
     T(a),
+    T(a) + (T(b)/2 - T(a)/2),
+    T(b),
+  ]
+end
+
+
+function specialcases(_ :: Type{Range{T,a,b}}) :: Array{T,1} where {T<:Integer,a,b}
+  return [
+    T(a),
+    div(T(a)+T(b), 2),
     T(b),
   ]
 end
