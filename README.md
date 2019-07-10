@@ -103,9 +103,9 @@ If you do, this makes tests (and test failures) reproducible, which probably hel
 Bugs and caveats
 ----------------
 
-- Performance is quite low: `@quickcheck 10^6 true (x :: Int)` takes around 6 seconds on the author's laptop.
+- Performance is quite low: `@quickcheck 10^6 true (x :: Int)` takes around 1.5 seconds on the author's laptop.
 - Combinatorial explosion of special cases makes working with many variables very difficult.
-  For example, using nine `Float64` variables to check properties of 3x3 matrices generates 5*10^9 special cases (requiring 10 GiB of memory).
+  For example, using nine `Float64` variables to check properties of 3x3 matrices generates 5*10^9 special cases.
 - Testing is not exhaustive:
   You should not rely on `@quickcheck` to test every possible input value, e. g. if the only variable for which you are testing is a small integer range.
 

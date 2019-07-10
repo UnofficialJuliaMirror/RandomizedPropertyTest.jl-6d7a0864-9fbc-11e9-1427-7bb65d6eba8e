@@ -72,26 +72,36 @@ end
 
 function do_quickcheck(f :: Function, exprstr, varnames, types :: NTuple{N,DataType}, n :: Integer) where {N}
   rng = MersenneTwister(0)
-  for vars in Base.Iterators.flatten((specialcases(types), generate(rng, types) for _ in 1:n))
-    try
-      if !f(vars...)
-        if length(varnames) == 1
-          x = Expr(:(=), Symbol(varnames[1]), vars[1])
-        else
-          x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
-        end
-        @error "Property `$exprstr` does not hold for $x."
-        return false
-      end
-    catch exception
+  for vars in specialcases(types)
+    do_quickcheck(f, exprstr, varnames, vars) || return false
+  end
+  for _ in 1:n
+    vars = generate(rng, types)
+    do_quickcheck(f, exprstr, varnames, vars) || return false
+  end
+  return true
+end
+
+
+function do_quickcheck(f :: Function, exprstr, varnames, vars)
+  try
+    if !f(vars...)
       if length(varnames) == 1
         x = Expr(:(=), Symbol(varnames[1]), vars[1])
       else
         x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
       end
       @error "Property `$exprstr` does not hold for $x."
-      rethrow(exception)
+      return false
     end
+  catch exception
+    if length(varnames) == 1
+      x = Expr(:(=), Symbol(varnames[1]), varlues[1])
+    else
+      x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
+    end
+    @error "Property `$exprstr` does not hold for $x."
+    rethrow(exception)
   end
   return true
 end
@@ -167,8 +177,7 @@ end
 
 
 function specialcases(types :: NTuple{N,DataType}) where {N}
-  cases = [specialcases(T) for T in types]
-  return reshape(collect(Base.product(cases...)), prod(length(c) for c in cases))
+  return Base.product((specialcases(T) for T in types)...)
 end
 
 
