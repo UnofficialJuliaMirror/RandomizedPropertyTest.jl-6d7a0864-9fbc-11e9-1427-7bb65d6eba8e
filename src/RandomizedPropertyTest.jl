@@ -110,7 +110,22 @@ end
 """TODO: doc
 """
 function generate(rng :: AbstractRNG, types :: NTuple{N, DataType}) where {N}
-  return [generate(rng, T) for T in types]
+  return (generate(rng, T) for T in types)
+end
+
+
+# Special cases for small numbers of variables increases performance by (15%, 30%, 40%, 40%) for (one, two, three, four) variables, respectively.
+@inline function generate(rng :: AbstractRNG, types :: NTuple{1, DataType})
+  return (generate(rng, types[1]),)
+end
+@inline function generate(rng :: AbstractRNG, types :: NTuple{2, DataType})
+  return (generate(rng, types[1]), generate(rng, types[2]))
+end
+@inline function generate(rng :: AbstractRNG, types :: NTuple{3, DataType})
+  return (generate(rng, types[1]), generate(rng, types[2]), generate(rng, types[3]))
+end
+@inline function generate(rng :: AbstractRNG, types :: NTuple{4, DataType})
+  return (generate(rng, types[1]), generate(rng, types[2]), generate(rng, types[3]), generate(rng, types[4]))
 end
 
 
