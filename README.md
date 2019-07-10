@@ -133,7 +133,7 @@ Bugs and caveats
 Similar work
 ------------
 
-- [`QuickCheck`](https://github.com/nick8325/quickcheck) is a property testing framework for Haskell programs.
+- [`QuickCheck`](https://github.com/nick8325/quickcheck) is a property testing framework (or specification testing framework) for Haskell programs.
   It is great but cannot test Julia programs.
   Hence this project.
 - [`Quickcheck.jl`](https://github.com/pao/QuickCheck.jl) is a property testing implementation for Julia programs, also inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
