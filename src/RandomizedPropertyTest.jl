@@ -78,7 +78,7 @@ function do_quickcheck(f :: Function, exprstr, varnames, vars)
       if length(varnames) == 1
         x = Expr(:(=), Symbol(varnames[1]), vars[1])
       else
-        x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
+        x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(map(Symbol, varnames), vars))...)
       end
       @warn "Property `$exprstr` does not hold for $x."
       return false
@@ -87,7 +87,7 @@ function do_quickcheck(f :: Function, exprstr, varnames, vars)
     if length(varnames) == 1
       x = Expr(:(=), Symbol(varnames[1]), vars[1])
     else
-      x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(varnames, vars))...)
+      x = Expr(:tuple, (Expr(:(=), n, v) for (n, v) in zip(map(Symbol, varnames), vars))...)
     end
     @warn "Property `$exprstr` does not hold for $x."
     rethrow(exception)
