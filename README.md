@@ -163,10 +163,25 @@ Version
 The current version is 0.0.1.
 
 
+Copying
+-------
+
+Copyright © 2019  Lukas Himbert
+
+`RandomizedPropertyTest.jl` is free software:
+you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.
+If not, see <https://www.gnu.org/licenses/>.
+
+
 TODO
 ----
 
-- XXX add LICENSE.TXT, a copyright section to this readme, and a copyright header to src/*.jl
 - Write generators and special cases for all the things (see how QuickCheck does it?):
   - square matrices
   - symmetric matrices
