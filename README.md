@@ -133,7 +133,7 @@ Bugs and caveats
 ----------------
 
 - Performance is quite low:
-  On the author's laptop, `@quickcheck 10^7 true (x :: Int)` takes around 8.4 seconds and `@time @quickcheck 10^7 (a+b == b+a || any(isnan, (a,b)) || all(isinf, (a,b))) ((a,b) :: Float64)` takes around 7.7 seconds.
+  On the author's laptop, `@quickcheck n=10^7 true (x :: Int)` takes around 5.6 seconds and `@time @quickcheck n=10^7 (a+b == b+a || any(isnan, (a,b)) || all(isinf, (a,b))) ((a,b) :: Float64)` takes around 6.9 seconds.
 - Combinatorial explosion of special cases makes working with many variables very difficult.
   For example, using nine `Float64` variables to check properties of 3x3 matrices generates 5*10^9 special cases.
   If you need something like this, consider specialising `RandomizedPropertyTest.generate` for a custom generator datatype instead.

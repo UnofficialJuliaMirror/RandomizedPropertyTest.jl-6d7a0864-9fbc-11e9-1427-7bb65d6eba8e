@@ -208,7 +208,7 @@ end
 end
 
 
-function generate(rng :: AbstractRNG, T :: DataType) :: T
+function generate(rng :: AbstractRNG, _ :: Type{T}) where {T}
   rand(rng, T)
 end
 
