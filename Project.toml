@@ -1,6 +1,6 @@
 name = "RandomizedPropertyTest"
 uuid = "6d7a0864-9fbc-11e9-1427-7bb65d6eba8e"
-authors = ["Lukas Himbert <lukas_himbert@posteo.de>"]
+authors = ["Lukas Himbert <lukas@2.71828.eu>"]
 version = "0.1.0"
 
 [deps]
@@ -12,3 +12,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
+[compat]
+julia = "1"

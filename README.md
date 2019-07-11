@@ -179,7 +179,7 @@ Version
 -------
 
 `RandomizedPropertyTest.jl` follows [semanting versioning v2.0.0](https://semver.org/).
-The current version is 0.0.1.
+The current version is 0.1.0.
 
 
 Copying
