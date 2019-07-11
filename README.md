@@ -1,7 +1,7 @@
 `RandomizedPropertyTest.jl`
 ---------------------------
 
-`RandomizedPropertyTest.jl` is a test framework for testing program properties with random (as well as special pre-defined) inputs.
+`RandomizedPropertyTest.jl` is a test framework for testing program properties with random (as well as special pre-defined) inputs, inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
 
 Test status: [![builds.sr.ht status](https://builds.sr.ht/~quf/RandomizedPropertyTest.jl.svg)](https://builds.sr.ht/~quf/RandomizedPropertyTest.jl?)
 
@@ -105,15 +105,15 @@ To use `@quickcheck` with a custom datatype, or to generate random samples from 
 In this example, we generate floats from the normal distribution.
 
 ```
-julia> using RandomizedPropertyTest
+julia> using RandomizedPropertyTest, Random
 
-julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.generate, Random.AbstractRNG
+julia> import RandomizedPropertyTest.specialcases, RandomizedPropertyTest.generate
 
 julia> struct NormalFloat{T}; end # Define a new type; it does not need to be a parametric type.
 
 julia> RandomizedPropertyTest.specialcases(_ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = RandomizedPropertyTest.specialcases(T) # Inherit special cases from the "regular" type.
 
-julia> RandomizedPropertyTest.generate(rng :: Random.AbstractRNG, _ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = randn(rng, T) # Define random generation using the normal distribution.
+julia> RandomizedPropertyTest.generate(rng :: AbstractRNG, _ :: Type{NormalFloat{T}}) where {T<:AbstractFloat} = randn(rng, T) # Define random generation using the normal distribution.
 
 julia> @quickcheck (typeof(x) == Float32) (x :: NormalFloat{Float32}) # Use the new type like the built-in types.
 true
@@ -166,7 +166,6 @@ The current version is 0.0.1.
 TODO
 ----
 
-- XXX modify `@quickcheck` to allow `n=[arbitrary expression]`.
 - XXX add LICENSE.TXT, a copyright section to this readme, and a copyright header to src/*.jl
 - Write generators and special cases for all the things (see how QuickCheck does it?):
   - square matrices
@@ -177,10 +176,13 @@ TODO
   - strings
   - rational numbers
   - Maybe also for certain distributions: normal, exponential, cauchy, lognormal, ...
+  - enumerations
+  - union types
+  - Finite{T} where {T <: Number}
   - ???
 - To test numerical algorithms, there should be convenient syntax to test matrices and vectors of certain corresponding sizes.
   Maybe something like `@quickcheck ((A,v) = x; transpose(v) * A * v ≥ 0) (x :: SymmetricMatrixAndVector{Float64})`.
-- Figure out how to achieve parallel checking without losing reproducibility of test cases.
+- Figure out how to achieve parallel checking without losing reproducibility of test cases (fixed large number of independent streams?).
   Also figure out how to make parallel checking convenient (`@parallel @quickcheck expr types`?)
 
 
