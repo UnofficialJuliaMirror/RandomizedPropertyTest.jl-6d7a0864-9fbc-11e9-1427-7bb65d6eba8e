@@ -29,8 +29,8 @@ julia> @quickcheck (isnan(x) || x^2 ≥ 0) (x :: Float64)
 true
 ```
 
-The macro returns true, which means the property holds for all inputs which were tested.
-Because the macro returns a boolean, it can be used together with the `@test` macro for automated testing.
+The macro returns `true`, which means the property holds for all inputs which were tested.
+Because the macro returns a `Bool`, it can be used together with the `@test` macro for automated testing.
 
 Next, we will test Julia's builtin trigonometric functions, for floats inside of a certain range:
 
@@ -96,6 +96,25 @@ true
 At this time, support for arrays with more than two dimensions is limited.
 
 
+Supported Datatypes
+-------------------
+
+The following built-in data types have predefined generators:
+- `Bool`
+- `Int8`, `Int16`, `Int32`, `Int64`, `Int128`
+- `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`
+- `Float16`, `Float32`, `Float64`
+- `Complex{T}` for any `T` for which a generator is defined
+- `Array{T,N}` for any `T` for which a generator is defined
+- Types for which `rand(rng, T)` is available.
+
+The following additional data types have predefined generators:
+- `Range{T,a,b}` where `T` is an `Integer` or an `AbstractFloat` (for which a generator is defined).
+  Represents the interval `[a,b]` for variables of type `T`.
+- `Disk{Complex{T},z₀,r}` where `T` is an `AbstractFloat` (for which a generator is defined).
+  Represents the disk `abs(z-z₀) < r` for variables of type `Complex{T}`.
+
+
 Custom Distributions or Datatypes
 ---------------------------------
 
@@ -124,7 +143,7 @@ For multiple variables, every combination of special cases is tested.
 Make sure to limit the number of special cases to avoid problems due to combinatorial explosion - for more than one variable, all combinations of all special cases are checked.
 
 The function `generate` should return a single random specimen of the datatype.
-Note that it takes a `AbstractRNG` argument.
+Note that it takes an `AbstractRNG` argument.
 You do not technically have to use it, but you should.
 If you do, this makes tests (and test failures) reproducible, which probably helps debugging.
 
@@ -148,7 +167,7 @@ Bugs and caveats
 Related work
 ------------
 
-- [`QuickCheck`](https://github.com/nick8325/quickcheck) is a property testing framework (or specification testing framework) for Haskell programs.
+- [`QuickCheck`](https://github.com/nick8325/quickcheck) (as well as the [original QuickCheck](www.cse.chalmers.se/~rjmh/QuickCheck/)) is a property testing framework (or specification testing framework) for Haskell programs.
   It is great but cannot test Julia programs.
   Hence this project.
 - [`Quickcheck.jl`](https://github.com/pao/QuickCheck.jl) is a property testing implementation for Julia programs, also inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
