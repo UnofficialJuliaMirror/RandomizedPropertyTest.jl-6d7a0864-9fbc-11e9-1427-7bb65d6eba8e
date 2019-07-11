@@ -16,18 +16,16 @@ export @quickcheck
 
 
 """
-    @quickcheck [n] expr (vartuple :: T) [...]
+    @quickcheck [n=nexpr] expr (vartuple :: T) [...]
 
 Check whether the property expressed by `expr` holds for variables `vartuple...` of type `T`.
 Multiple such variable declarations may be given.
 Returns `false` if a counterexample was found, `true` otherwise.
 It should be noted that a result of `true` does not constitute proof of the property.
 
-`n` is the number of pseudorandom inputs used to examine the veracity of the property.
+`nexpr` is the number of pseudorandom inputs used to examine the veracity of the property.
 It has no effect on special cases, which are always checked.
-To check only special cases, you may set `n` to zero.
-Currently, `n` needs to be either a number or a power of numbers:
-Symbols or general expressions are not supported at this time.
+To check only special cases, you may set `nexpr` to zero.
 
 For reproducibility of counterexamples, inputs are chosen pseudorandomly with a fixed seed.
 Instead of running `@quickcheck` multiple times to be more certain of the property you wish to verify, run it once with a larger `n`.
@@ -46,7 +44,7 @@ true
 
 The same test with alternative syntax and a larger number of tests:
 ```jldoctest
-julia> @quickcheck 10^6 (a+b == b+a) ((a, b) :: Int)
+julia> @quickcheck n=10^6 (a+b == b+a) ((a, b) :: Int)
 true
 ```
 
@@ -68,16 +66,14 @@ macro quickcheck(args...)
   names = Symbol[]
   types = []
 
-  length(args) >= 2 || error("Use as @quickcheck [n] expr type [...]")
+  length(args) >= 2 || error("Use as @quickcheck [n=nexpr] expr type [...]")
 
-  if args[1] isa Number
-    n = args[1]
-    args = args[2:end]
-  elseif args[1] isa Expr && args[1].head == :call && args[1].args[1] == :^ && all(x->x isa Number, args[1].args[2])
-    n = ^(args[1].args[2:end]...)
+  if args[1] isa Expr && args[1].head == :(=) && args[1].args[1] == :n
+    nexpr = esc(args[1].args[2])
     args = args[2:length(args)]
+    length(args) >= 2 || error("Use as @quickcheck [n=nexpr] expr type [...]")
   else
-    n = 10^4
+    nexpr = 10^4
   end
 
   expr = args[1]
@@ -108,7 +104,7 @@ macro quickcheck(args...)
   fexpr = esc(Expr(:(->), nametuple, expr)) # escaping is required for global (and other) variables in the calling scope
 
   return quote
-    do_quickcheck($fexpr, $exprstr, $namestrs, $typetuple, $n)
+    do_quickcheck($fexpr, $exprstr, $namestrs, $typetuple, $nexpr)
   end
 end
 

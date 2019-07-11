@@ -66,7 +66,7 @@ To increase (or reduce) the number of random tests, we can simply give the numbe
 ```jldoctest
 julia> using RandomizedPropertyTest
 
-julia> @quickcheck 10^6 (sum(x^k/factorial(k) for k in 20:-1:0) ≈ exp(x)) (x :: Range{Float64, -2, 2})
+julia> @quickcheck n=10^6 (sum(x^k/factorial(k) for k in 20:-1:0) ≈ exp(x)) (x :: Range{Float64, -2, 2})
 true
 ```
 
