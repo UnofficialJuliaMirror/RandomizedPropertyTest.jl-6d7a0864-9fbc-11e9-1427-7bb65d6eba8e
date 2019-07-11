@@ -140,12 +140,12 @@ Bugs and caveats
 - Testing is not exhaustive:
   You should not rely on `@quickcheck` to test every possible input value, e. g. if the only variable for which you are testing is a small integer range.
 - Error messages do not give correct source location information in case of a failure.
-  However, if `@quickcheck` used in conjunction with `@test`, a full stacktrace is given; if it is used interactively, the location should be obvious.
+  However, if `@quickcheck` is used in conjunction with `@test`, a full stacktrace is given; if it is used interactively, the location should be obvious.
   Further, in both cases the expression is printed.
   This makes the lack of correct location only a minor issue in most cases.
 
 
-Similar work
+Related work
 ------------
 
 - [`QuickCheck`](https://github.com/nick8325/quickcheck) is a property testing framework (or specification testing framework) for Haskell programs.
