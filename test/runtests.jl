@@ -25,8 +25,8 @@ import Logging
 
 @testset "Test failures" begin
   Logging.disable_logging(Logging.Warn)
-  @test false == @quickcheck 10 false (x :: Int)
-  @test false == @quickcheck 10 (x < 0) (x :: Int)
+  @test false == @quickcheck n=10 false (x :: Int)
+  @test false == @quickcheck n=10 (x < 0) (x :: Int)
   @test_throws ErrorException @quickcheck error() (x :: Int)
   Logging.disable_logging(Logging.Info)
 end
@@ -50,7 +50,7 @@ end
 @testset "Check type for basic datatypes" begin
   for T in (Bool, Float16, Float32, Float64, Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128, ComplexF16, ComplexF32, ComplexF64)
     @testset "Check $T" begin
-      @test @quickcheck 10^2 (typeof(x) == T) (x :: T)
+      @test @quickcheck n=10^2 (typeof(x) == T) (x :: T)
     end
   end
 end
@@ -73,8 +73,8 @@ end
   for T in (Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128)
     @test @quickcheck (typeof(x) == T) (x :: Range{T, 0, 1})
     @test @quickcheck (0 ≤ x ≤ 42) (x :: Range{T, 0, 42})
-    @test 14 in RandomizedPropertyTest.specialcases(Range{T, 14, 56})
-    @test 56 in RandomizedPropertyTest.specialcases(Range{T, 14, 56})
+    @test n=14 in RandomizedPropertyTest.specialcases(Range{T, 14, 56})
+    @test n=56 in RandomizedPropertyTest.specialcases(Range{T, 14, 56})
   end
 end
 
@@ -88,9 +88,9 @@ end
 
 @testset "Test array type" begin
   for T in (Bool, Float16, Float32, Float64, Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128, ComplexF16, ComplexF32, ComplexF64)
-    @test @quickcheck 10 (typeof(x) == Array{T,1}) (x :: Array{T,1})
-    @test @quickcheck 10 (typeof(x) == Array{T,2}) (x :: Array{T,2})
-    #@test @quickcheck 10 (typeof(x) == Array{T,3}) (x :: Array{T,3})
+    @test @quickcheck n=10 (typeof(x) == Array{T,1}) (x :: Array{T,1})
+    @test @quickcheck n=10 (typeof(x) == Array{T,2}) (x :: Array{T,2})
+    #@test @quickcheck n=10 (typeof(x) == Array{T,3}) (x :: Array{T,3})
   end
 end
 
