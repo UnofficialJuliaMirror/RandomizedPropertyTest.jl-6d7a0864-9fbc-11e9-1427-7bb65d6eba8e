@@ -21,6 +21,9 @@ import Random
 import Logging
 
 
+struct SomeType end # Used in a test below. Needs to be global for julia 1.0.
+
+
 @testset "All tests" begin
 
 @testset "Test failures" begin
@@ -40,7 +43,6 @@ end
     @test @quickcheck (y == 4) (x :: Int)
   end
   begin
-    struct SomeType end
     RandomizedPropertyTest.specialcases(_ :: Type{SomeType}) = Int8[1]
     RandomizedPropertyTest.generate(_ :: Random.AbstractRNG, _ :: Type{SomeType}) = Int8(1)
     @test @quickcheck (typeof(x) == Int8 && x == 1) (x :: SomeType)
