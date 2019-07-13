@@ -151,13 +151,17 @@ If you do, this makes tests (and test failures) reproducible, which probably hel
 Bugs and caveats
 ----------------
 
+- Testing is not exhaustive:
+  You should not rely on `@quickcheck` to test every possible input value, even if the set of possible input values is small.
+- `@quickcheck` can not verify program properties.
+  It can only find counterexamples or fail to do so.
+- Unlike [`QuickCheck`](https://github.com/nick8325/quickcheck), this package neither attempts to minimize failing test cases, nor has builtin support to generate random functions.
+  Shrinking of failing tests may be implemented in the future.
 - Performance is quite low:
   On the author's laptop, `@quickcheck n=10^7 true (x :: Int)` takes around 5.6 seconds and `@time @quickcheck n=10^7 (a+b == b+a || any(isnan, (a,b)) || all(isinf, (a,b))) ((a,b) :: Float64)` takes around 6.9 seconds.
 - Combinatorial explosion of special cases makes working with many variables very difficult.
   For example, using nine `Float64` variables to check properties of 3x3 matrices generates 5*10^9 special cases.
-  If you need something like this, consider specialising `RandomizedPropertyTest.generate` for a custom generator datatype instead.
-- Testing is not exhaustive:
-  You should not rely on `@quickcheck` to test every possible input value, e. g. if the only variable for which you are testing is a small integer range.
+  If you need many variables to express the property you want to check, consider specialising `RandomizedPropertyTest.generate` and `RandomizedPropertyTest.specialcases` for a custom generator datatype instead.
 - Error messages do not give correct source location information in case of a failure.
   However, if `@quickcheck` is used in conjunction with `@test`, a full stacktrace is given; if it is used interactively, the location should be obvious.
   Further, in both cases the expression is printed.
@@ -170,7 +174,7 @@ Related work
 - [`QuickCheck`](https://github.com/nick8325/quickcheck) (as well as the [original QuickCheck](www.cse.chalmers.se/~rjmh/QuickCheck/)) is a property testing framework (or specification testing framework) for Haskell programs.
   It is great but cannot test Julia programs.
   Hence this project.
-- [`Quickcheck.jl`](https://github.com/pao/QuickCheck.jl) is a property testing implementation for Julia programs, also inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
+- [`QuickCheck.jl`](https://github.com/pao/QuickCheck.jl) is a property testing implementation for Julia programs, also inspired by [`QuickCheck`](https://github.com/nick8325/quickcheck).
   At the time of writing, it seems to be unmaintained since five years and is not compatible with Julia version 1 (though a pull request which fixes this is pending).
   Unlike this package, it does not specifically test special values like NaN or empty arrays.
 
@@ -218,6 +222,7 @@ TODO
   Maybe something like `@quickcheck ((A,v) = x; transpose(v) * A * v ≥ 0) (x :: SymmetricMatrixAndVector{Float64})`.
 - Figure out how to achieve parallel checking without losing reproducibility of test cases (fixed large number of independent streams?).
   Also figure out how to make parallel checking convenient (`@parallel @quickcheck expr types`?)
+- Shrink failing test cases?
 
 
 How does it work?
